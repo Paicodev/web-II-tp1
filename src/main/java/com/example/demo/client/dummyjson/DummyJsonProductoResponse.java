@@ -6,7 +6,7 @@ import java.util.List;
  * Forma exacta de la respuesta de GET https://dummyjson.com/products
  * (incluye "products", "total", "skip" y "limit").
  */
-public record DummyJsonProductosResponse(
+public record DummyJsonProductoResponse(
         List<DummyJsonProducto> products,
         int total,
         int skip,
