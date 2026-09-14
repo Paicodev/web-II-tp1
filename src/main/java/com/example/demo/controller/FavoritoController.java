@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 //Es el mas complejo de los tres, es el que se comunica con el cliente, recibe las solicitudes y devuelve las respuestas.
 /*Usa muchos anotadores:
 -@RestController: indica que es un controlador REST, es decir, que devuelve datos en formato JSON.
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 */
 @RestController
 @RequestMapping("/api/favoritos")
+@Tag(name="Favoritos", description = "Operaciones CRUD sobre la lista de favoritos en memoria")
 public class FavoritoController {
     private final FavoritoService service;
 
@@ -39,17 +44,20 @@ public class FavoritoController {
     }
 
     @GetMapping
+    @Operation(summary="Listar favoritos", description = "Lista todos los favoritos que se guardaron")
     public List<FavoritoResponse> listar(
             @RequestParam(defaultValue = "") String q) {
         return service.listar(q);
     }
 
     @GetMapping("/{id}")
+    @Operation(summary="Buscar por Id", description = "Muestra el favorito específico segun el id ingresado")
     public FavoritoResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
 
     @PostMapping
+    @Operation(summary="Agregar a favoritos", description = "Agrega un producto de la api externa a favoritos y se le asocia una nota personal")
     public ResponseEntity<FavoritoResponse> crear(
             @Valid @RequestBody CrearFavoritoRequest request) {
         FavoritoResponse creado = service.crear(request);
@@ -57,6 +65,7 @@ public class FavoritoController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary="Modifica un favorito", description = "Permite actualizar los datos de un producto en el listado de favoritos")
     public FavoritoResponse actualizar(
             @PathVariable Long id,
             @Valid @RequestBody CrearFavoritoRequest request) {
@@ -64,6 +73,7 @@ public class FavoritoController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary="Eliminar favorito", description = "permite eliminar un favorito del listado en memoria")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
