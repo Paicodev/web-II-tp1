@@ -6,14 +6,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import org.springframework.stereotype.Repository;
+
 import com.example.demo.model.Favorito;
 
 /*Este es la implementacion de FavoritoRepository.
 Viene a ser el adaptador que implementa el puerto definido por FavoritoRepository.
  */
-@Repository
+//desactivado temporalmente porque vamos a usar la base de datos
+//@Repository
 public class FavoritoRepositoryMemoria implements FavoritoRepository {
+
     private final Map<Long, Favorito> datos = new ConcurrentHashMap<>();
     private final AtomicLong secuencia = new AtomicLong();
 
@@ -30,11 +32,11 @@ public class FavoritoRepositoryMemoria implements FavoritoRepository {
     @Override
     public Favorito guardar(Favorito Favorito) {
         Long id = Favorito.id() == null
-            ? secuencia.incrementAndGet()
-            : Favorito.id();
+                ? secuencia.incrementAndGet()
+                : Favorito.id();
 
         Favorito guardado = new Favorito(
-            id, Favorito.productoId(), Favorito.nota(), Favorito.fecha()
+                id, Favorito.productoId(), Favorito.nota(), Favorito.fecha()
         );
         datos.put(id, guardado);
         return guardado;
