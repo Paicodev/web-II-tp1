@@ -65,3 +65,14 @@ curl http://localhost:8080/ping
 - `spring-boot-starter-webmvc` — Spring MVC + Tomcat embebido.
 - `spring-boot-starter-validation` — Bean Validation (`@NotNull`, `@NotBlank`, ...).
 - `springdoc-openapi-starter-webmvc-ui` — Swagger UI / OpenAPI.
+
+## Arquitectura Hexagonal: Puertos y Adaptadores (TP2)
+
+Se migró la persistencia en memoria, quedando esta obsoleta y pasando a utilizarse PostgreSQL.
+
+Las clases que no cambiaron fueron: `FavoritoController`, `FavoritoService`, el modelo de dominio `Favorito`, el puerto `FavoritoRepository` y los DTOs (`CrearFavoritoRequest`, `FavoritoResponse`).
+Las clases que se incorporaron son: `FavoritoEntity` (entidad JPA), `FavoritoJpaRepository` (Spring Data) y `FavoritoRepositoryAdapter` (adaptador).
+La clase `FavoritoRepositoryMemoria` quedó obsoleta.
+
+### Justificación
+Esto fue posible porque `FavoritoRepository` actúa como un **puerto** (un contrato). Entonces, terminamos aplicando el principio SOLID de inversión de dependencias. Y tanto `FavoritoRepositoryMemoria` como `FavoritoRepositoryAdapter` son **adaptadores** del puerto `FavoritoRepository`, permitiendo que el servicio de negocio no dependa de los detalles técnicos de almacenamiento. Esto hace que el sistema sea más flexible y mantenible.  
