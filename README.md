@@ -103,3 +103,14 @@ Si removiéramos `@Transactional` y una falla ocurriera a mitad de camino (por e
 - Las reasignaciones quedarían confirmadas de manera parcial en la base de datos.
 - La lista origen quedaría vacía pero sin eliminarse, o en un fallo intermedio unos favoritos pertenecerían a una lista y otros a otra.
 Con `@Transactional`, Spring y PostgreSQL garantizan que si cualquier escritura o validación falla, se produce un **rollback** automático, devolviendo el estado de la base de datos exactamente al punto previo al inicio de la operación.
+
+## Evidencias de Ejecución
+
+### Swagger UI
+![Swagger UI](docs-utils/swagger.png)
+
+### Caso de Exito: Postman, al agregar una lista de favoritos
+![Postman Exito](docs-utils/postman-exito.png)
+
+### Caso de Error: 409 Conflict al borrar lista con favoritos
+![Error 409](docs-utils/postman-manejoDeError.png)
