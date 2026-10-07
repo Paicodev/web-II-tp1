@@ -89,3 +89,6 @@ Tanto el modelo de dominio `Favorito` como los DTOs (`CrearFavoritoRequest` y `F
 
 ### 3. Protección de Integridad Referencial (409 Conflict)
 En `ListaService`, antes de eliminar una lista se verifica si posee favoritos asociados mediante el repositorio. Si la lista no está vacía, se lanza `ListaNoVaciaException`, la cual es capturada por `GlobalExceptionHandler` respondiendo un estado HTTP `409 Conflict`, evitando errores de integridad en la base de datos (500).
+
+## Evolución del Esquema (Punto 6)
+Esto se resuelve mediante una migración nueva (`V4`) y no editando `V3` porque en entornos reales y en Flyway las migraciones son **aditivas e inmutables**. Modificar un script ya aplicado rompería la validación de checksum en bases de datos existentes en producción. La evolución incremental permite transformar datos existentes (backfill) antes de aplicar restricciones destructivas como `NOT NULL` sin pérdida de información ni tiempo de inactividad.
