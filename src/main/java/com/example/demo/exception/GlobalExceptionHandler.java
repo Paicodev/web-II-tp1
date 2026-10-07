@@ -56,4 +56,12 @@ public class GlobalExceptionHandler {
         problema.setTitle("Error interno");
         return problema;
     }
+
+        @ExceptionHandler(ListaNoVaciaException.class)
+    public ProblemDetail handleListaNoVacia(ListaNoVaciaException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problema.setTitle("Conflicto al eliminar recurso");
+        return problema;
+    }
+
 }

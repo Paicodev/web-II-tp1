@@ -4,9 +4,12 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 //Entity es un anotador que define a la clase como entidad
@@ -32,6 +35,10 @@ public class FavoritoEntity {
     //Anotador para identificar la columna como fecha_alta
     @Column(name = "fecha_alta", nullable = false)
     private LocalDateTime fechaAlta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lista_id")
+    private ListaEntity lista;
 
 //constructor vacio para persistencia
     public FavoritoEntity() {
@@ -77,5 +84,13 @@ public class FavoritoEntity {
 
     public void setFechaAlta(LocalDateTime fechaAlta) {
         this.fechaAlta = fechaAlta;
+    }
+
+    public ListaEntity getLista() {
+        return lista;
+    }
+
+    public void setLista(ListaEntity lista) {
+        this.lista = lista;
     }
 }

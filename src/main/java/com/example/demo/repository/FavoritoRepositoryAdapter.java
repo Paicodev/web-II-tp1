@@ -2,10 +2,10 @@ package com.example.demo.repository;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.FavoritoEntity;
+import com.example.demo.entity.ListaEntity;
 import com.example.demo.model.Favorito;
 
 @Repository
@@ -13,12 +13,10 @@ public class FavoritoRepositoryAdapter implements FavoritoRepository {
 
     private final FavoritoJpaRepository jpaRepository;
 
-    // Inyección por constructor (DI)
     public FavoritoRepositoryAdapter(FavoritoJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
     }
 
-//Sobreescribimos los metodos del puerto para usar la base de datos con el JPA Repository
     @Override
     public List<Favorito> buscarTodos() {
         return jpaRepository.findAll()
@@ -45,23 +43,38 @@ public class FavoritoRepositoryAdapter implements FavoritoRepository {
         jpaRepository.deleteById(id);
     }
 
-    //aca lo que hacemos es tomar la entidad JPA y convertirla a modelo de dominio para poder devolverla
+    @Override
+    public List<Favorito> buscarPorListaId(Long listaId) {
+        return jpaRepository.findByListaId(listaId)
+                .stream()
+                .map(this::aDominio)
+                .toList();
+    }
+
+    // --- Mapeadores privados (van una sola vez al final) ---
+
+    // De Entidad JPA a Modelo de Dominio
     private Favorito aDominio(FavoritoEntity entity) {
         return new Favorito(
                 entity.getId(),
                 entity.getProductoId(),
+                entity.getLista() != null ? entity.getLista().getId() : null,
                 entity.getNota(),
                 entity.getFechaAlta().toLocalDate()
         );
     }
 
-    //aca lo que hacemos es tomar el modelo de dominio y convertirlo a entidad JPA para poder guardarlo en la base de datos
+    // De Modelo de Dominio a Entidad JPA
     private FavoritoEntity aEntity(Favorito domain) {
-        return new FavoritoEntity(
+        FavoritoEntity entity = new FavoritoEntity(
                 domain.id(),
                 domain.productoId(),
                 domain.nota(),
                 domain.fecha() != null ? domain.fecha().atStartOfDay() : java.time.LocalDateTime.now()
         );
- }
+        if (domain.listaId() != null) {
+            entity.setLista(new ListaEntity(domain.listaId(), null));
+        }
+        return entity;
+    }
 }

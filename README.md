@@ -76,3 +76,16 @@ La clase `FavoritoRepositoryMemoria` quedó obsoleta.
 
 ### Justificación
 Esto fue posible porque `FavoritoRepository` actúa como un **puerto** (un contrato). Entonces, terminamos aplicando el principio SOLID de inversión de dependencias. Y tanto `FavoritoRepositoryMemoria` como `FavoritoRepositoryAdapter` son **adaptadores** del puerto `FavoritoRepository`, permitiendo que el servicio de negocio no dependa de los detalles técnicos de almacenamiento. Esto hace que el sistema sea más flexible y mantenible.  
+
+## Modelado Relacional: Listas y Favoritos (Punto 5)
+
+### 1. Relación uno a muchos (@ManyToOne) Unidireccional
+Se vinculó la entidad `FavoritoEntity` con `ListaEntity` mediante una relación `@ManyToOne` en la columna `lista_id`.
+- **¿Por qué unidireccional?** Se evitó colocar `@OneToMany` en `ListaEntity` para evitar complejidades de carga perezosa (*lazy loading*), sobrecarga de memoria y posibles referencias circulares al serializar JSON.
+- **¿Cómo se obtienen los favoritos de una lista?** Se resolvió mediante una consulta derivada de Spring Data JPA: `findByListaId(Long listaId)` en `FavoritoJpaRepository`.
+
+### 2. Dominio y DTOs desacoplados
+Tanto el modelo de dominio `Favorito` como los DTOs (`CrearFavoritoRequest` y `FavoritoResponse`) referencian a la lista únicamente mediante su identificador numérico (`Long listaId`), sin cargar el objeto completo `Lista`. Esto preserva el aislamiento del dominio.
+
+### 3. Protección de Integridad Referencial (409 Conflict)
+En `ListaService`, antes de eliminar una lista se verifica si posee favoritos asociados mediante el repositorio. Si la lista no está vacía, se lanza `ListaNoVaciaException`, la cual es capturada por `GlobalExceptionHandler` respondiendo un estado HTTP `409 Conflict`, evitando errores de integridad en la base de datos (500).

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public record FavoritoResponse(
     Long id,
     Long productoId,
+    Long listaId,
     String nota,
     LocalDate fechaAlta
 ) {}

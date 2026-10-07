@@ -35,7 +35,7 @@ public class FavoritoService {
 
     public FavoritoResponse crear(CrearFavoritoRequest request) {
         Favorito nuevo = new Favorito(
-            null, request.productoId(), request.nota(), java.time.LocalDate.now()
+            null, request.productoId(),request.listaId(), request.nota(), java.time.LocalDate.now()
         );
         return aResponse(repository.guardar(nuevo));
     }
@@ -43,7 +43,7 @@ public class FavoritoService {
     public FavoritoResponse actualizar(Long id, CrearFavoritoRequest request) {
         buscar(id);
         Favorito actualizado = new Favorito(
-            id, request.productoId(), request.nota(), java.time.LocalDate.now()
+            id, request.productoId(),request.listaId(), request.nota(), java.time.LocalDate.now()
         );
         return aResponse(repository.guardar(actualizado));
     }
@@ -57,6 +57,7 @@ public class FavoritoService {
         return new FavoritoResponse(
             Favorito.id(),
             Favorito.productoId(),
+            Favorito.listaId(),
             Favorito.nota(),
             Favorito.fecha()
         );
