@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.CrearListaRequest;
 import com.example.demo.dto.FavoritoResponse;
@@ -77,4 +79,31 @@ public class ListaService {
                 favorito.fecha()
         );
     }
+
+    // Operacion Atomica que mueve todos los fav o no mueve nada
+    @Transactional
+    public void moverFavoritos(Long origenId, Long destinoId) {
+        //Valida que ambas listas existan (tira 404 si alguna no está gracias a que buscar() lanza exception)
+        buscar(origenId);
+        buscar(destinoId);
+
+        //Traer los favoritos de la lista origen
+        List<Favorito> favoritos = favoritoRepository.buscarPorListaId(origenId);
+
+        //Reasignar cada favorito a la lista destino y guardarlo
+        for (Favorito fav : favoritos) {
+            Favorito reasignado = new Favorito(
+                    fav.id(),
+                    fav.productoId(),
+                    destinoId, // lista nueva que sale de MoverFavoritosDTO
+                    fav.nota(),
+                    fav.fecha()
+            );
+            favoritoRepository.guardar(reasignado);
+        }
+
+        // Eliminar la lista origen
+        listaRepository.eliminar(origenId);
+    }
+
 }

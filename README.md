@@ -92,3 +92,14 @@ En `ListaService`, antes de eliminar una lista se verifica si posee favoritos as
 
 ## Evolución del Esquema (Punto 6)
 Esto se resuelve mediante una migración nueva (`V4`) y no editando `V3` porque en entornos reales y en Flyway las migraciones son **aditivas e inmutables**. Modificar un script ya aplicado rompería la validación de checksum en bases de datos existentes en producción. La evolución incremental permite transformar datos existentes (backfill) antes de aplicar restricciones destructivas como `NOT NULL` sin pérdida de información ni tiempo de inactividad.
+
+## Transacciones y Atomicidad (Punto 7)
+
+La operación `POST /api/listas/{origenId}/mover-favoritos` reasigna los favoritos a una nueva lista y elimina la lista origen. Este método está anotado con `@Transactional` en `ListaService`, respetando la 'A' en ACID de las transacciones.
+
+### Justificación teórica (ACID)
+En términos de **Atomicidad**, la operación debe comportarse como una unidad indivisible: "todo o nada". 
+Si removiéramos `@Transactional` y una falla ocurriera a mitad de camino (por ejemplo, después de actualizar los favoritos pero antes de eliminar la lista de origen):
+- Las reasignaciones quedarían confirmadas de manera parcial en la base de datos.
+- La lista origen quedaría vacía pero sin eliminarse, o en un fallo intermedio unos favoritos pertenecerían a una lista y otros a otra.
+Con `@Transactional`, Spring y PostgreSQL garantizan que si cualquier escritura o validación falla, se produce un **rollback** automático, devolviendo el estado de la base de datos exactamente al punto previo al inicio de la operación.

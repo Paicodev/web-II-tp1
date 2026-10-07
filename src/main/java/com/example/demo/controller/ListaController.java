@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -67,4 +68,15 @@ public class ListaController {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    // POST /api/listas/{origenId}/mover-favoritos
+    @PostMapping("/{origenId}/mover-favoritos")
+    @Operation(summary = "Mover favoritos entre listas", description = "Reasigna atómicamente todos los favoritos de la lista origen a la destino y elimina la lista origen")
+    public ResponseEntity<Void> moverFavoritos(
+            @PathVariable Long origenId,
+            @Valid @RequestBody com.example.demo.dto.MoverFavoritosRequest request) {
+        service.moverFavoritos(origenId, request.destinoId());
+        return ResponseEntity.ok().build();
+    }
+
 }
