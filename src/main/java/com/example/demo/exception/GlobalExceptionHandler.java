@@ -1,14 +1,14 @@
 package com.example.demo.exception;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Manejador centralizado de errores de toda la API. En vez de que cada
@@ -61,6 +61,13 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleListaNoVacia(ListaNoVaciaException ex) {
         ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problema.setTitle("Conflicto al eliminar recurso");
+        return problema;
+    }
+
+        @ExceptionHandler(EmailYaExisteException.class)
+    public ProblemDetail handleEmailYaExiste(EmailYaExisteException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problema.setTitle("Conflicto de registro");
         return problema;
     }
 

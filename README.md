@@ -114,3 +114,23 @@ Con `@Transactional`, Spring y PostgreSQL garantizan que si cualquier escritura 
 
 ### Caso de Error: 409 Conflict al borrar lista con favoritos
 ![Error 409](docs-utils/postman-manejoDeError.png)
+
+# TP3 · Seguridad, pruebas e integración continua
+
+## 1. Registro y Persistencia de Usuarios (Paso 2)
+Se implementó el registro de usuarios bajo el patrón de puertos y adaptadores:
+- **Hashing seguro con BCrypt:** Las contraseñas nunca se persisten en texto plano. Se procesan mediante `PasswordEncoder` (`BCryptPasswordEncoder`) antes de almacenarse en la columna `password_hash`.
+- **Rol por defecto:** Todo nuevo usuario registrado recibe automáticamente el rol `USER`.
+- **Integridad y Conflictos (409 Conflict):** La columna `email` cuenta con restricción `UNIQUE` en PostgreSQL (migración `V5`). Si se intenta registrar un correo ya existente, `AuthService` lanza `EmailYaExisteException`, respondiendo un estado HTTP `409 Conflict`.
+- **Seguridad en respuestas:** El DTO de salida `UsuarioResponse` omite deliberadamente cualquier referencia al hash de la contraseña.
+
+### Evidencias de Registro y Persistencia
+
+#### Registro exitoso de usuario (201 Created)
+![Registro exitoso](docs-utils/TP3-registro-exitoso.png)
+
+#### Manejo de error 409 Conflict (Email duplicado)
+![Error 409](docs-utils/TP3-registro-excepcion-409.png)
+
+#### Persistencia en PostgreSQL con contraseñas hasheadas en BCrypt
+![Base de datos usuarios](docs-utils/TP3-bd.png)
