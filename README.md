@@ -144,6 +144,22 @@ Se implementó el inicio de sesión y la emisión de tokens bajo el estándar JS
 - **Prevención de ataques de enumeración:** Ante un usuario inexistente o una contraseña incorrecta, el sistema responde siempre con el mismo mensaje genérico (*"Email o contraseña incorrectos"*) y un código HTTP `401 Unauthorized`, evitando revelar si un correo electrónico se encuentra registrado.
 - **Emisión del token:** Si las credenciales son válidas, `JwtService` genera un token firmado criptográficamente con algoritmo **HMAC-SHA256 (HS256)** que incluye en su payload el identificador (`id`), el correo (`sub`) y el rol (`rol`) del usuario.
 
+#### Demo de la emisión de token (el usuario es ficticio, no hay datos sensibles en riesgo)
+![Emision](docs-utils/TP3-POST-login-token.png)
+
 ### Configuración de Seguridad Inicial (`SecurityConfig`)
 - **Arquitectura Stateless:** Se deshabilitan las sesiones de servidor (`SessionCreationPolicy.STATELESS`) y la protección CSRF (`csrf.disable()`), ya que las peticiones se autentican de forma desacoplada mediante tokens y no por cookies de navegador.
 - **Segmentación de rutas:** Se declaran públicas las rutas `/api/auth/**`, `/api/productos/**` y la documentación de Swagger (`/swagger-ui/**`, `/v3/api-docs/**`), exigiendo autenticación para cualquier otro recurso.
+
+### Filtro de Autenticación JWT (`JwtAuthenticationFilter`)
+- **Extensión de `OncePerRequestFilter`:** Garantiza que la validación del token se ejecute exactamente una vez por cada petición entrante.
+- **Validación del encabezado `Authorization`:** Extrae el token con esquema `Bearer <token>`, valida su firma criptográfica y vigencia mediante `JwtService`.
+
+#### Demo de la autorización por bearer token
+![Emision](docs-utils/TP3-GET-autorizado-token.png)
+
+- **Inyección en el `SecurityContext`:** Establece una instancia de `UsernamePasswordAuthenticationToken` con los roles (`ROLE_USER` / `ROLE_ADMIN`) en el `SecurityContextHolder`, dejando la identidad disponible para las capas posteriores.
+- **Protección efectiva:** Cualquier petición a endpoints protegidos (`/api/listas/**`, `/api/favoritos/**`) sin token o con uno inválido es rechazada automáticamente con un código HTTP `401 Unauthorized`.
+
+#### Demo del código 401 al no estar autenticado
+![Emision](docs-utils/TP3-GET-401.png)
