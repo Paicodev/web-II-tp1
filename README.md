@@ -134,3 +134,16 @@ Se implementó el registro de usuarios bajo el patrón de puertos y adaptadores:
 
 #### Persistencia en PostgreSQL con contraseñas hasheadas en BCrypt
 ![Base de datos usuarios](docs-utils/TP3-bd.png)
+
+## 2. Autenticación y Emisión de JWT (Paso 3)
+
+Se implementó el inicio de sesión y la emisión de tokens bajo el estándar JSON Web Token (JWT):
+
+### Endpoint de Inicio de Sesión (`POST /api/auth/login`)
+- **Validación segura de credenciales:** Se busca el usuario por email y se comprueba la contraseña enviada contra el hash almacenado mediante `passwordEncoder.matches()`. 
+- **Prevención de ataques de enumeración:** Ante un usuario inexistente o una contraseña incorrecta, el sistema responde siempre con el mismo mensaje genérico (*"Email o contraseña incorrectos"*) y un código HTTP `401 Unauthorized`, evitando revelar si un correo electrónico se encuentra registrado.
+- **Emisión del token:** Si las credenciales son válidas, `JwtService` genera un token firmado criptográficamente con algoritmo **HMAC-SHA256 (HS256)** que incluye en su payload el identificador (`id`), el correo (`sub`) y el rol (`rol`) del usuario.
+
+### Configuración de Seguridad Inicial (`SecurityConfig`)
+- **Arquitectura Stateless:** Se deshabilitan las sesiones de servidor (`SessionCreationPolicy.STATELESS`) y la protección CSRF (`csrf.disable()`), ya que las peticiones se autentican de forma desacoplada mediante tokens y no por cookies de navegador.
+- **Segmentación de rutas:** Se declaran públicas las rutas `/api/auth/**`, `/api/productos/**` y la documentación de Swagger (`/swagger-ui/**`, `/v3/api-docs/**`), exigiendo autenticación para cualquier otro recurso.

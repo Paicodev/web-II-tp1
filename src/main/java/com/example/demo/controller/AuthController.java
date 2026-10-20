@@ -32,4 +32,13 @@ public class AuthController {
         UsuarioResponse creado = authService.registrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
+
+        @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Valida credenciales contra la base de datos y devuelve un token JWT firmado")
+    public ResponseEntity<com.example.demo.dto.LoginResponse> login(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody com.example.demo.dto.LoginRequest request) {
+        com.example.demo.dto.LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
 }
