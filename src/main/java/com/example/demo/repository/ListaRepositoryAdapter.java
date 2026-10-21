@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.ListaEntity;
+import com.example.demo.entity.UsuarioEntity;
 import com.example.demo.model.Lista;
 
 @Repository
@@ -45,10 +46,25 @@ public class ListaRepositoryAdapter implements ListaRepository {
 
     // --- Mapeadores ---
     private Lista aDominio(ListaEntity entity) {
-        return new Lista(entity.getId(), entity.getNombre());
+        Long usuarioId = entity.getUsuario() != null ? entity.getUsuario().getId(): null;
+        return new Lista(entity.getId(), entity.getNombre(), usuarioId);
     }
 
     private ListaEntity aEntity(Lista domain) {
-        return new ListaEntity(domain.id(), domain.nombre());
+        ListaEntity entity = new ListaEntity(domain.id(), domain.nombre());
+        if (domain.usuarioId() != null) {
+            UsuarioEntity usuario = new UsuarioEntity();
+            usuario.setId(domain.usuarioId());
+            entity.setUsuario(usuario);
+        }
+        return entity;
+    }
+
+    @Override
+    public List<Lista> buscarPorUsuarioId(Long usuarioId) {
+        return jpaRepository.findByUsuarioId(usuarioId)
+                .stream()
+                .map(this::aDominio)
+                .toList();
     }
 }

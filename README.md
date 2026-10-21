@@ -163,3 +163,33 @@ Se implementó el inicio de sesión y la emisión de tokens bajo el estándar JS
 
 #### Demo del código 401 al no estar autenticado
 ![Emision](docs-utils/TP3-GET-401.png)
+
+## 3. Autorización por Rol y Propiedad de Recursos (Paso 4)
+
+Se implementó el control de acceso basado en roles (**RBAC**) y la propiedad de recursos sobre las listas de favoritos:
+
+### 1. Modelado de Propiedad y Migración (`V6__add_usuario_id_a_listas.sql`)
+- Se vinculó `ListaEntity` con `UsuarioEntity` mediante una relación muchos a uno en la columna `usuario_id` con clave foránea en PostgreSQL. Osea cada lista, tiene un usuario al cual hacer referencia.
+- Se aplicó una migración evolutiva con backfill: se creó un usuario administrador inicial por defecto y se asignaron las listas históricas huérfanas antes de establecer la restricción `NOT NULL`.
+- En el dominio puro, el record inmutable `Lista` incorpora el campo `Long usuarioId`, manteniéndose desacoplado de las anotaciones de Hibernate.
+
+### 2. Reglas de Negocio en `ListaService` (Arquitectura Hexagonal)
+- **¿Por qué la autorización se ubica en el Service y no en el Controller?** 
+  En Arquitectura Hexagonal, las reglas de permisos y propiedad de datos son **reglas de negocio**. Ubicarlas en el `ListaService` garantiza que se apliquen siempre, sin importar si la llamada proviene de un controlador REST, de una prueba unitaria o de un proceso por lotes.
+- **Creación segura (`POST /api/listas`):** El dueño de la lista se obtiene directamente del usuario autenticado en el `SecurityContextHolder`. El cliente no puede forzar la propiedad en el cuerpo de la petición.
+- **Visibilidad segmentada (`GET /api/listas`):**
+  - Si el usuario posee rol `USER`, la consulta se delega a `listaRepository.buscarPorUsuarioId(id)`, retornando únicamente sus listas.
+  - Si el usuario posee rol `ADMIN`, puede auditar y visualizar todas las listas del sistema.
+- **Protección de recursos ajenos (403 Forbidden):**
+  - Cualquier intento por parte de un `USER` de consultar, modificar o eliminar una lista de otro usuario dispara `AccesoDenegadoException`, respondiendo un estado HTTP `403 Forbidden` bajo el estándar RFC 7807 (`ProblemDetail`).
+
+### Evidencias de Autorización y Propiedad
+
+#### Visibilidad restringida para usuario común (solo ve sus listas)
+![Listas User](docs-utils/TP3-GET-listas-user.png)
+
+#### Visibilidad global para usuario administrador (ve todas las listas)
+![Listas Admin](docs-utils/TP3-GET-listas-admin.png)
+
+#### Control de acceso: 403 Forbidden al intentar acceder a una lista ajena
+![Error 403](docs-utils/TP3-GET-403-forbidden.png)
