@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/listas")
-@Tag(name = "Listas", description = "Operaciones sobre las listas de favoritos")
+@Tag(name = "Listas", description = "Operaciones sobre listas de favoritos y gestión de propiedad (Requiere autenticación con Bearer Token)")
 public class ListaController {
 
     private final ListaService service;

@@ -1,12 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.CrearFavoritoRequest;
-import com.example.demo.dto.FavoritoResponse;
-import com.example.demo.service.FavoritoService;
-
-
 import java.util.List;
-import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,9 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.CrearFavoritoRequest;
+import com.example.demo.dto.FavoritoResponse;
+import com.example.demo.service.FavoritoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 //Es el mas complejo de los tres, es el que se comunica con el cliente, recibe las solicitudes y devuelve las respuestas.
 /*Usa muchos anotadores:
@@ -35,7 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 */
 @RestController
 @RequestMapping("/api/favoritos")
-@Tag(name="Favoritos", description = "Operaciones CRUD sobre la lista de favoritos en memoria")
+@Tag(name = "Favoritos", description = "Operaciones CRUD sobre favoritos en PostgreSQL (Requiere autenticación con Bearer Token)")
 public class FavoritoController {
     private final FavoritoService service;
 

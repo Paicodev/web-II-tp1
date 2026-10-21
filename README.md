@@ -9,7 +9,7 @@ recurso— se va a ir sumando a esta rama a medida que avance la cursada.
 
 Requiere Java 25. Usar siempre el wrapper, nunca un `mvn` instalado aparte:
 
-```
+```bash
 # Windows
 .\mvnw.cmd spring-boot:run
 
@@ -21,6 +21,7 @@ Cuando el log muestre `Started DemoApplication`, la app queda escuchando en
 `http://localhost:8080`.
 
 Para compilar y correr los tests: `./mvnw test` (o `.\mvnw.cmd test`).
+
 
 ## Endpoints disponibles hoy
 
@@ -198,6 +199,18 @@ Se implementó el control de acceso basado en roles (**RBAC**) y la propiedad de
 
 Se diseñó una suite de pruebas automatizadas dividida en pruebas unitarias de negocio y pruebas de integración sobre bases de datos reales:
 
+
+### Cómo correr los tests localmente
+Asegurarse de tener Docker Desktop iniciado (para que Testcontainers levante PostgreSQL 17) y ejecutar:
+
+```bash
+# En Windows
+.\mvnw.cmd test
+
+# En Linux / macOS
+./mvnw test
+```
+
 ### 1. Pruebas Unitarias (JUnit 5 + Mockito)
 Aíslan completamente la capa de aplicación y prueban la lógica pura sin levantar Spring ni tocar la base de datos:
 - **`AuthServiceTest`:**
@@ -243,6 +256,13 @@ Se configuró un pipeline de Integración Continua (**CI**) mediante GitHub Acti
   2. El runner cuenta con Docker preinstalado, permitiendo que **Testcontainers** descargue y levante `postgres:17-alpine` de forma transparente durante el flujo de CI.
   3. Ejecuta `./mvnw clean test`, corriendo toda la batería de pruebas unitarias y de integración.
   4. Protege la calidad del código bloqueando cualquier fusión de cambios si una prueba no supera el 100% de éxito.
+
+  
+### Cómo leer el resultado de CI en GitHub
+- Podés ver todas las corridas en: [GitHub Actions Workflow](https://github.com/Paicodev/web-II-tp1/actions)
+- **🟢 Verde (Checkmark):** Todos los pasos (`setup-java`, servicio PostgreSQL, `mvn clean test` con Testcontainers) completaron con 100% de éxito. El código es apto para integrarse.
+- **🔴 Rojo (Cruz):** Hubo un error de compilación o falló una aserción de test. Al hacer clic en el commit fallido -> job `build-and-test` -> paso `Run ./mvnw clean test`, la consola detalla exactamente qué método falló, la línea y el motivo de la falla.
+
 
 #### Evidencias de Ejecución en GitHub Actions
 
@@ -290,3 +310,16 @@ Se preparó la aplicación para ejecutarse de manera desacoplada en plataformas 
 
 ##### Servicio corriendo la ruta /health
 ![Ruta health funcionando](docs-utils/TP3-render-health.png)
+
+### Pasos de Despliegue seguidos
+1. **Base de Datos Remota (Neon.tech):**
+   - Creación de un proyecto PostgreSQL 17 en la nube de Neon.
+   - Obtención de la URL de conexión JDBC con soporte SSL obligatorio (`sslmode=require`).
+2. **Contenedorización (`Dockerfile`):**
+   - Configuración de un build multi-stage con OpenJDK 25 y ejecución bajo usuario no root.
+3. **Web Service (Render):**
+   - Conexión del repositorio de GitHub (`Paicodev/web-II-tp1`) apuntando a la rama `TP3`.
+   - Inyección de variables de entorno seguras (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `PORT`).
+4. **Verificación en Vivo:**
+   - Confirmación en los logs de la ejecución de Flyway (`V1` a `V6`).
+   - Comprobación de disponibilidad mediante `GET https://web-ii-tp3.onrender.com/health`.
