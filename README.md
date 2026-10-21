@@ -251,3 +251,42 @@ Se configuró un pipeline de Integración Continua (**CI**) mediante GitHub Acti
 
 ##### Pipeline finalizado con éxito (Build Passed ✅)
 ![CI completado con éxito](docs-utils/TP3-ci-exitoso.png)
+
+#### Validación de Detección de Errores (Fallo y Recuperación)
+Se validó la efectividad del pipeline forzando una falla en una prueba unitaria:
+1. **Detección del fallo:** Al introducir un error deliberado en la aserción de `AuthServiceTest`, el pipeline detuvo la construcción y marcó el commit en rojo (`Build Failed ❌`), impidiendo la integración de código defectuoso.
+2. **Recuperación:** Al corregir la prueba y reintentar el push, el pipeline ejecutó nuevamente la suite completa, restableciendo el estado a verde (`Build Passed ✅`).
+##### Pipeline fallando por error inducido en prueba unitaria
+![CI Fallido](docs-utils/TP3-ci-fallido.png)
+
+## 6. Despliegue en la Nube (Paso 7)
+
+Se preparó la aplicación para ejecutarse de manera desacoplada en plataformas de tipo **PaaS** (como Koyeb) con base de datos PostgreSQL administrada y remota:
+
+### 1. Preparación para Entornos de Producción
+- **Contenedorización Multi-Stage (`Dockerfile`):**
+  - **construcción (`build`):** Utiliza Maven sobre OpenJDK 25 para compilar y empaquetar el `.jar` aislando las dependencias.
+  - **ejecución (`runtime`):** Imagen mínima con Eclipse Temurin JRE 25.
+  - **Seguridad en contenedores:** Se ejecuta bajo un usuario sin privilegios (`spring:spring`), evitando correr la aplicación como `root`.
+- **Puerto dinámico:** Se configuró `server.port=${PORT:8080}` en `application.properties` para escuchar en el puerto aleatorio asignado por el balanceador de carga de la nube.
+- **Inyección segura de credenciales:** Ninguna contraseña ni clave secreta se almacena en el repositorio. Los valores se inyectan en tiempo de ejecución mediante variables de entorno:
+  - `DB_URL`: Cadena de conexión JDBC hacia PostgreSQL remoto con cifrado SSL obligatorio.
+  - `DB_USERNAME` y `DB_PASSWORD`: Credenciales de acceso a la base de datos remota.
+  - `JWT_SECRET`: Clave de alta entropía (HMAC-SHA256) exclusiva de producción.
+
+### 2. Base de Datos Remota y Despliegue en Render
+- **Base de Datos:** Instancia gestionada de PostgreSQL 17 en la nube con soporte SSL.
+- **Evolución del esquema:** Al iniciar en la nube, Flyway ejecuta de forma transparente todas las migraciones (`V1` a `V6`) en la base de datos remota.
+- **URL pública de producción:** [https://web-ii-tp3.onrender.com](https://web-ii-tp3.onrender.com)
+
+
+#### Evidencias de Despliegue en Producción
+
+##### Servicio levantado y saludable en Render (Healthy / Running)
+![Render Deploy](docs-utils/TP3-render-running.png)
+
+##### Petición en vivo hacia la nube desde Postman
+![Postman Cloud OK](docs-utils/TP3-postman-cloud.png)
+
+##### Servicio corriendo la ruta /health
+![Ruta health funcionando](docs-utils/TP3-render-health.png)
