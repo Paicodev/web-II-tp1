@@ -110,7 +110,7 @@ class AuthServiceTest {
 
         // THEN
         assertNotNull(response);
-        assertEquals("token_roto_para_probar_ci", response.token());
+        assertEquals("mocked.jwt.token", response.token());
         verify(jwtService).generarToken(usuarioGuardado);
     }
 }

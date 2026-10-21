@@ -232,3 +232,22 @@ Para evitar los falsos positivos de bases en memoria (como H2), se implementaron
 
 ##### 100% de Pruebas de Integración exitosas en consola
 ![Consola Testcontainers OK](docs-utils/TP3-testcontainers-consola.png)
+
+## 5. Integración Continua con GitHub Actions (Paso 6)
+
+Se configuró un pipeline de Integración Continua (**CI**) mediante GitHub Actions en `.github/workflows/ci.yml`:
+- **Disparadores (Triggers):** Se ejecuta automáticamente ante cualquier `push` o `pull_request` sobre las ramas `main` y `TP3`.
+- **Entorno de ejecución:** Máquina virtual en la nube con `ubuntu-latest`, contenedor de servicio PostgreSQL 17 y JDK 25.
+- **Orquestación en la nube:**
+  1. Clona el repositorio y configura la versión de Java con caché de dependencias de Maven.
+  2. El runner cuenta con Docker preinstalado, permitiendo que **Testcontainers** descargue y levante `postgres:17-alpine` de forma transparente durante el flujo de CI.
+  3. Ejecuta `./mvnw clean test`, corriendo toda la batería de pruebas unitarias y de integración.
+  4. Protege la calidad del código bloqueando cualquier fusión de cambios si una prueba no supera el 100% de éxito.
+
+#### Evidencias de Ejecución en GitHub Actions
+
+##### Pipeline ejecutándose en tiempo real en la nube
+![CI en ejecución](docs-utils/TP3-ci-en-proceso.png)
+
+##### Pipeline finalizado con éxito (Build Passed ✅)
+![CI completado con éxito](docs-utils/TP3-ci-exitoso.png)

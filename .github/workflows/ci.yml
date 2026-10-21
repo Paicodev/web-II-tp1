@@ -35,7 +35,7 @@ jobs:
 
       # 2. Instala el JDK 25 configurando caché de dependencias Maven
       - name: Configurar JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '25'
           distribution: 'microsoft'
