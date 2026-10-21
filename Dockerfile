@@ -1,24 +1,29 @@
-# Etapa 1: Compilación del código con Maven y Java 25
-FROM maven:3.9.9-eclipse-temurin-25-noble AS build
+# Etapa 1: Compilación con OpenJDK 25 usando el wrapper del proyecto
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 
-# Copiamos descriptores de dependencias para aprovechar la caché de Docker
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+# Copiamos descriptores y el wrapper de Maven
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-# Copiamos el código fuente y compilamos sin ejecutar tests en el empaquetado final
+# Corregimos saltos de línea de Windows (CRLF a LF) y damos permisos de ejecución
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+
+# Descargamos dependencias para aprovechar la caché
+RUN ./mvnw dependency:go-offline -B
+
+# Copiamos el código fuente y empaquetamos el jar
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
-# Etapa 2: Imagen liviana de ejecución (JRE)
-FROM eclipse-temurin:25-jre-noble
+# Etapa 2: Imagen liviana de ejecución (JRE 25)
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
-# Creamos un usuario no privilegiado por seguridad
+# Usuario no privilegiado para mayor seguridad
 RUN groupadd -r spring && useradd -r -g spring spring
 USER spring:spring
 
-# Copiamos únicamente el archivo .jar generado en la etapa anterior
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
