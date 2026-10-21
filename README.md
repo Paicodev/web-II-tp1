@@ -193,3 +193,22 @@ Se implementó el control de acceso basado en roles (**RBAC**) y la propiedad de
 
 #### Control de acceso: 403 Forbidden al intentar acceder a una lista ajena
 ![Error 403](docs-utils/TP3-GET-403-forbidden.png)
+
+## 4. Pruebas Automatizadas (Paso 5)
+
+Se diseñó una suite de pruebas automatizadas dividida en pruebas unitarias de negocio y pruebas de integración sobre bases de datos reales:
+
+### 1. Pruebas Unitarias (JUnit 5 + Mockito)
+Aíslan completamente la capa de aplicación y prueban la lógica pura sin levantar Spring ni tocar la base de datos:
+- **`AuthServiceTest`:**
+  - Garantiza que las contraseñas **NUNCA se persistan en texto plano**, verificando la invocación obligatoria a `passwordEncoder.encode()`.
+  - Comprueba la prevención de correos duplicados (`EmailYaExisteException`).
+  - Valida el rechazo con `401` ante contraseñas incorrectas y la emisión de tokens ante credenciales legítimas.
+- **`ListaServiceTest`:**
+  - Valida la **asignación automática de dueño** (`usuarioId`) leyendo el `SecurityContextHolder`.
+  - Verifica el control de acceso: los usuarios comunes reciben `AccesoDenegadoException` (`403`) al intentar acceder o borrar listas de otros.
+  - Verifica que los usuarios con rol `ADMIN` posean autorización global.
+  - Comprueba la regla de integridad de negocio bloqueando el borrado de listas con favoritos (`409 Conflict`).
+
+#### Evidencia de ejecución unitaria (100% de tests en verde)
+![Pruebas Unitarias](docs-utils/TP3-tests-unitarios-ok.png)
