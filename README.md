@@ -212,3 +212,23 @@ Aíslan completamente la capa de aplicación y prueban la lógica pura sin levan
 
 #### Evidencia de ejecución unitaria (100% de tests en verde)
 ![Pruebas Unitarias](docs-utils/TP3-tests-unitarios-ok.png)
+
+### 2. Pruebas de Integración con Testcontainers (PostgreSQL 17 en Docker)
+Para evitar los falsos positivos de bases en memoria (como H2), se implementaron pruebas de integración reales utilizando **Testcontainers**:
+- **Aislamiento absoluto:** Se levanta un contenedor Docker temporal con la imagen oficial de `postgres:17-alpine`.
+- **Evolución del esquema:** Flyway ejecuta de forma limpia todas las migraciones (`V1` a `V6`) en cada corrida.
+- **Autoconfiguración dinámica:** Con `@ServiceConnection`, Spring Boot inyecta automáticamente la URL, puerto aleatorio y credenciales generadas por el contenedor.
+- **Escenarios de prueba integrales (`ApiIntegrationTest`):**
+  1. `401 Unauthorized`: Rechazo automático ante peticiones a rutas protegidas sin encabezado `Authorization`.
+  2. `401 Unauthorized`: Rechazo ante intentos de inicio de sesión con contraseñas inválidas.
+  3. `201 Created`: Creación efectiva de una lista asignando el `usuarioId` del token en la base de datos PostgreSQL real.
+  4. `403 Forbidden`: Bloqueo y respuesta `ProblemDetail` cuando un usuario con rol `USER` intenta acceder a una lista ajena.
+  5. `200 OK`: Autorización irrestricta cuando un usuario con rol `ADMIN` accede a la lista.
+
+#### Evidencias de Ejecución con Testcontainers
+
+##### Contenedores efímeros instanciados en Docker Desktop
+![Docker Desktop Testcontainers](docs-utils/TP3-testcontainers-docker.png)
+
+##### 100% de Pruebas de Integración exitosas en consola
+![Consola Testcontainers OK](docs-utils/TP3-testcontainers-consola.png)
